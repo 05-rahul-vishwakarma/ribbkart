@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:5000/api";
+export const BASE_URL = "http://172.16.2.2:5000/api";
 
 export const API_ENDPOINTS = {
   auth: {
@@ -9,13 +9,6 @@ export const API_ENDPOINTS = {
     updatePassword: `${BASE_URL}/auth/updatepassword`,
     forgotPassword: `${BASE_URL}/auth/forgotpassword`,
     resetPassword: (resettoken: string) => `${BASE_URL}/auth/resetpassword/${resettoken}`,
-  },
-  admin: {
-    users: `${BASE_URL}/admin/users`,
-    updateUserRole: (id: string) => `${BASE_URL}/admin/users/${id}/role`,
-    dashboard: `${BASE_URL}/admin/dashboard`,
-    salesAnalytics: `${BASE_URL}/admin/analytics/sales`,
-    inventoryAnalytics: `${BASE_URL}/admin/analytics/inventory`,
   },
   products: {
     all: `${BASE_URL}/products`,

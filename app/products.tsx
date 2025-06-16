@@ -13,94 +13,34 @@ import { Header } from '@/components/ui/Header';
 import { Colors } from '@/constants/Colors';
 import { ProductCard, Product } from '@/components/product/ProductCard';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { useProducts } from '@/hooks/useProducts';
+import { useProductStore } from '@/stores/productStore';
+import { useCategories } from '@/hooks/useCategories';
 
 // Sample product data (using the same data from other files)
-const allProducts: Product[] = [
-  {
-    id: '1',
-    name: 'Summer Floral Dress',
-    price: 79.99,
-    discountPrice: 59.99,
-    image: 'https://images.pexels.com/photos/6311392/pexels-photo-6311392.jpeg',
-    category: 'Women',
-    isNew: true,
-  },
-  {
-    id: '2',
-    name: 'Casual Denim Jacket',
-    price: 89.99,
-    image: 'https://images.pexels.com/photos/2584269/pexels-photo-2584269.jpeg',
-    category: 'Men',
-  },
-  {
-    id: '3',
-    name: 'White Sneakers',
-    price: 69.99,
-    discountPrice: 49.99,
-    image: 'https://images.pexels.com/photos/1280064/pexels-photo-1280064.jpeg',
-    category: 'Shoes',
-  },
-  {
-    id: '4',
-    name: 'Leather Watch',
-    price: 159.99,
-    image: 'https://images.pexels.com/photos/190819/pexels-photo-190819.jpeg',
-    category: 'Accessories',
-    isNew: true,
-  },
-  {
-    id: '5',
-    name: 'Classic T-Shirt',
-    price: 29.99,
-    image: 'https://images.pexels.com/photos/5384423/pexels-photo-5384423.jpeg',
-    category: 'Men',
-  },
-  {
-    id: '6',
-    name: 'Summer Hat',
-    price: 24.99,
-    image: 'https://images.pexels.com/photos/984619/pexels-photo-984619.jpeg',
-    category: 'Accessories',
-  },
-];
 
-// Extract unique categories
-const categories = [...new Set(allProducts.map(product => product.category))];
+
 
 export default function ProductsScreen() {
   const router = useRouter();
+  const { products, productsLoading, productsError, fetchProductsByCategory } = useProducts();
+  const { data: categoriesData, isLoading: isLoadingCategories } = useCategories();
+  const { products: storeProducts, loading, error, refetchAllProducts } = useProductStore();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>(allProducts);
-  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    setIsLoading(true);
-    // Simulate API call with timeout
-    setTimeout(() => {
-      if (selectedCategory) {
-        setFilteredProducts(allProducts.filter(product =>
-          product.category === selectedCategory
-        ));
-      } else {
-        setFilteredProducts(allProducts);
-      }
-      setIsLoading(false);
-    }, 300);
-  }, [selectedCategory]);
-
-  const handleCategoryPress = (category: string) => {
-    setSelectedCategory(prevCategory =>
-      prevCategory === category ? null : category
-    );
-  };
+  let selectedCategoryName = '';
+  if (selectedCategory && Array.isArray(categoriesData)) {
+    const foundCategory = categoriesData.find((cat: any) => cat.id === selectedCategory);
+    if (foundCategory) {
+      selectedCategoryName = foundCategory.name || '';
+    }
+  }
 
   const handleAddToCart = (id: string) => {
-    // Add to cart functionality
     console.log(`Added product ${id} to cart`);
   };
 
   const handleToggleWishlist = (id: string) => {
-    // Toggle wishlist functionality
     console.log(`Toggled wishlist for product ${id}`);
   };
 
@@ -128,7 +68,12 @@ export default function ProductsScreen() {
                 styles.categoryChip,
                 selectedCategory === null && styles.selectedCategoryChip
               ]}
-              onPress={() => setSelectedCategory(null)}
+              onPress={() => {
+                setSelectedCategory(null);
+                if (refetchAllProducts) {
+                  refetchAllProducts();
+                }
+              }}
             >
               <Text style={[
                 styles.categoryChipText,
@@ -138,20 +83,23 @@ export default function ProductsScreen() {
               </Text>
             </TouchableOpacity>
 
-            {categories.map((category) => (
+            {Array.isArray(categoriesData) && categoriesData.map((category: any) => (
               <TouchableOpacity
-                key={category}
+                key={category.id}
                 style={[
                   styles.categoryChip,
-                  selectedCategory === category && styles.selectedCategoryChip
+                  selectedCategory === category.id && styles.selectedCategoryChip
                 ]}
-                onPress={() => handleCategoryPress(category)}
+                onPress={() => {
+                  setSelectedCategory(category.id);
+                  fetchProductsByCategory(category.id);
+                }}
               >
                 <Text style={[
                   styles.categoryChipText,
-                  selectedCategory === category && styles.selectedCategoryChipText
+                  selectedCategory === category.id && styles.selectedCategoryChipText
                 ]}>
-                  {category}
+                  {category.name}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -163,7 +111,7 @@ export default function ProductsScreen() {
           style={styles.productsContainer}
           entering={FadeIn.duration(400)}
         >
-          {isLoading ? (
+          {loading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color={Colors.primary.main} />
             </View>
@@ -171,13 +119,13 @@ export default function ProductsScreen() {
             <>
               <View style={styles.resultsHeader}>
                 <Text style={styles.resultsCount}>
-                  {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
-                  {selectedCategory ? ` in ${selectedCategory}` : ''}
+                  {storeProducts.length} {storeProducts.length === 1 ? 'product' : 'products'}
+                  {selectedCategoryName ? ` in ${selectedCategoryName}` : ''}
                 </Text>
               </View>
 
               <FlatList
-                data={filteredProducts}
+                data={storeProducts}
                 keyExtractor={item => item.id}
                 numColumns={2}
                 renderItem={({ item }) => (

@@ -1,21 +1,11 @@
+import { publicInstance, privateInstance } from '../axiosInstance';
 import { API_ENDPOINTS } from '../api_endpoints';
 
-export const getAllBrands = () => fetch(API_ENDPOINTS.brands.all);
-export const getBrand = (id: string) => fetch(API_ENDPOINTS.brands.single(id));
+export const getAllBrands = () => publicInstance.get(API_ENDPOINTS.brands.all);
+export const getBrand = (id: string) => publicInstance.get(API_ENDPOINTS.brands.single(id));
 
-export const createBrand = (token: string, data: any) => fetch(API_ENDPOINTS.brands.create, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-  body: JSON.stringify(data),
-});
+export const createBrand = (data: any) => privateInstance.post(API_ENDPOINTS.brands.create, data);
 
-export const updateBrand = (token: string, id: string, data: any) => fetch(API_ENDPOINTS.brands.update(id), {
-  method: 'PUT',
-  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-  body: JSON.stringify(data),
-});
+export const updateBrand = (id: string, data: any) => privateInstance.put(API_ENDPOINTS.brands.update(id), data);
 
-export const deleteBrand = (token: string, id: string) => fetch(API_ENDPOINTS.brands.delete(id), {
-  method: 'DELETE',
-  headers: { Authorization: `Bearer ${token}` },
-}); 
+export const deleteBrand = (id: string) => privateInstance.delete(API_ENDPOINTS.brands.delete(id)); 

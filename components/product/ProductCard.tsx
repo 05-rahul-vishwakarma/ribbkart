@@ -27,9 +27,29 @@ export interface Product {
   name: string;
   price: number;
   discountPrice?: number;
-  image: string;
-  category: string;
+  salePrice?: number;
+  images: {
+    public_id?: string;
+    url: string;
+    _id?: string;
+    id?: string;
+  }[];
+  category: {
+    _id: string;
+    name: string;
+    parent: string | null;
+    id: string;
+  } | null;
   isNew?: boolean;
+  rating?: number;
+  averageRating?: number;
+  reviewCount?: number;
+  numReviews?: number;
+  description?: string;
+  sizes?: string[];
+  colors?: { name: string; code: string; }[];
+  features?: string[];
+  specifications?: { name: string; value: string }[];
 }
 
 interface ProductCardProps {
@@ -95,11 +115,13 @@ export function ProductCard({
         <TouchableOpacity activeOpacity={0.8}>
           <Card elevation={1} style={styles.card}>
             <View style={styles.imageContainer}>
-              <Image 
-                source={{ uri: product.image }} 
-                style={styles.image}
-                resizeMode="cover"
-              />
+              {product.images && product.images.length > 0 && (
+                <Image 
+                  source={{ uri: product.images[0]?.url }} 
+                  style={styles.image}
+                  resizeMode="cover"
+                />
+              )}
               {product.isNew && (
                 <View style={styles.newTag}>
                   <Text style={styles.newTagText}>NEW</Text>
@@ -108,7 +130,7 @@ export function ProductCard({
             </View>
             
             <View style={styles.content}>
-              <Text style={styles.category}>{product.category}</Text>
+              <Text style={styles.category}>{product?.category?.name}</Text>
               <Text style={styles.name} numberOfLines={1}>{product.name}</Text>
               
               <View style={styles.priceRow}>
@@ -164,7 +186,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: 150,
+    height: 200,
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
   },

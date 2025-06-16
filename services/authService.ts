@@ -1,41 +1,16 @@
+import { publicInstance, privateInstance } from '../axiosInstance';
 import { API_ENDPOINTS } from '../api_endpoints';
 
-export const register = (data: any) => fetch(API_ENDPOINTS.auth.register, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(data),
-});
+export const register = (data: any) => publicInstance.post(API_ENDPOINTS.auth.register, data);
 
-export const login = (data: any) => fetch(API_ENDPOINTS.auth.login, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(data),
-});
+export const login = (data: any) => publicInstance.post(API_ENDPOINTS.auth.login, data);
 
-export const logout = (token: string) => fetch(API_ENDPOINTS.auth.logout, {
-  method: 'GET',
-  headers: { Authorization: `Bearer ${token}` },
-});
+export const logout = () => privateInstance.get(API_ENDPOINTS.auth.logout);
 
-export const me = (token: string) => fetch(API_ENDPOINTS.auth.me, {
-  method: 'GET',
-  headers: { Authorization: `Bearer ${token}` },
-});
+export const me = () => privateInstance.get(API_ENDPOINTS.auth.me);
 
-export const updatePassword = (token: string, data: any) => fetch(API_ENDPOINTS.auth.updatePassword, {
-  method: 'PUT',
-  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-  body: JSON.stringify(data),
-});
+export const updatePassword = (data: any) => privateInstance.put(API_ENDPOINTS.auth.updatePassword, data);
 
-export const forgotPassword = (data: any) => fetch(API_ENDPOINTS.auth.forgotPassword, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(data),
-});
+export const forgotPassword = (data: any) => publicInstance.post(API_ENDPOINTS.auth.forgotPassword, data);
 
-export const resetPassword = (resettoken: string, data: any) => fetch(API_ENDPOINTS.auth.resetPassword(resettoken), {
-  method: 'PUT',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(data),
-}); 
+export const resetPassword = (resettoken: string, data: any) => publicInstance.put(API_ENDPOINTS.auth.resetPassword(resettoken), data); 

@@ -12,7 +12,10 @@ import { Link } from 'expo-router';
 export interface Category {
   id: string;
   name: string;
-  image: string;
+  image: {
+    url: string;
+    public_id?: string;
+  };
   itemCount: number;
 }
 
@@ -22,20 +25,27 @@ interface CategoryCardProps {
 
 export function CategoryCard({ category }: CategoryCardProps) {
   return (
-    <Link href={`/category/${category.id}`} asChild>
+    <Link href={{ pathname: "/category/[id]", params: { id: category.id } }} asChild>
       <TouchableOpacity activeOpacity={0.8} style={styles.container}>
-        <ImageBackground
-          source={{ uri: category.image }}
-          style={styles.image}
-          imageStyle={styles.imageStyle}
-        >
-          <View style={styles.overlay}>
+        {category.image?.url ? (
+          <ImageBackground
+            source={{ uri: category.image.url }}
+            style={styles.image}
+            imageStyle={styles.imageStyle}
+          >
+            <View style={styles.overlay}>
+              <Text style={styles.name}>{category.name}</Text>
+              <Text style={styles.itemCount}>{category.itemCount} items</Text>
+            </View>
+          </ImageBackground>
+        ) : (
+          <View style={[styles.image, styles.overlay]}>
             <Text style={styles.name}>{category.name}</Text>
             <Text style={styles.itemCount}>{category.itemCount} items</Text>
           </View>
-        </ImageBackground>
+        )}
       </TouchableOpacity>
-    </Link>
+     </Link>
   );
 }
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   View, 
   Text, 
@@ -13,70 +13,37 @@ import { Card } from '@/components/ui/Card';
 import { Header } from '@/components/ui/Header';
 import { Button } from '@/components/ui/Button';
 import { Colors } from '@/constants/Colors';
-import { ProductCard, Product } from '@/components/product/ProductCard';
+import { ProductCard } from '@/components/product/ProductCard';
 import { CategoryCard, Category } from '@/components/product/CategoryCard';
 import { StatusBar } from 'expo-status-bar';
 import Animated, { 
   FadeIn, 
   FadeInDown 
 } from 'react-native-reanimated';
+import { getFeaturedProducts } from '@/services/productService';
+import axios from 'axios';
+import { getAllCategories } from '@/services/categoryService';
+import { useCategories } from '@/hooks/useCategories';
 
-// Sample data
-const featuredProducts: Product[] = [
-  {
-    id: '1',
-    name: 'Summer Floral Dress',
-    price: 79.99,
-    discountPrice: 59.99,
-    image: 'https://images.pexels.com/photos/6311392/pexels-photo-6311392.jpeg',
-    category: 'Women',
-    isNew: true,
-  },
-  {
-    id: '2',
-    name: 'Casual Denim Jacket',
-    price: 89.99,
-    image: 'https://images.pexels.com/photos/2584269/pexels-photo-2584269.jpeg',
-    category: 'Men',
-  },
-  {
-    id: '3',
-    name: 'White Sneakers',
-    price: 69.99,
-    discountPrice: 49.99,
-    image: 'https://images.pexels.com/photos/1280064/pexels-photo-1280064.jpeg',
-    category: 'Shoes',
-  },
-  {
-    id: '4',
-    name: 'Leather Watch',
-    price: 159.99,
-    image: 'https://images.pexels.com/photos/190819/pexels-photo-190819.jpeg',
-    category: 'Accessories',
-    isNew: true,
-  },
-];
-
-const categories: Category[] = [
-  {
-    id: '1',
-    name: 'Women',
-    image: 'https://images.pexels.com/photos/1536619/pexels-photo-1536619.jpeg',
-    itemCount: 152,
-  },
-  {
-    id: '2',
-    name: 'Men',
-    image: 'https://images.pexels.com/photos/1342609/pexels-photo-1342609.jpeg',
-    itemCount: 124,
-  },
-  {
-    id: '3',
-    name: 'Kids',
-    image: 'https://images.pexels.com/photos/3662667/pexels-photo-3662667.jpeg',
-    itemCount: 89,
-  },
-];
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  discountPrice?: number;
+  images: {
+    url: string;
+    public_id?: string;
+    _id?: string;
+    id?: string;
+  }[];
+  category: {
+    _id: string;
+    name: string;
+    parent: string | null;
+    id: string;
+  };
+  isNew?: boolean;
+}
 
 const banners = [
   {
@@ -97,14 +64,29 @@ const banners = [
 
 export default function HomeScreen() {
   const router = useRouter();
+  const [products, setProducts] = useState<Product[]>([]);
+  const { data: categoriesData, isLoading: isLoadingCategories } = useCategories();
+
+
+  useEffect(() =>{
+     const fetch = async () =>{
+      try {
+       const response = await getFeaturedProducts();
+       setProducts(response.data.data);
+      } catch (error) {
+        console.error('Error fetching featured products:', error);
+      }
+     }
+
+     fetch();
+  },[])
   
   const handleAddToCart = (id: string) => {
-    // Add to cart functionality
+    // Add to cart 
     console.log(`Added product ${id} to cart`);
   };
   
   const handleToggleWishlist = (id: string) => {
-    // Toggle wishlist functionality
     console.log(`Toggled wishlist for product ${id}`);
   };
 
@@ -115,7 +97,7 @@ export default function HomeScreen() {
         showCart 
         showSearch 
         cartItemCount={3}
-        onSearchPress={() => router.push('/search')}
+        onSearchPress={() => router.push('/(tabs)/search')}
       />
       
       <ScrollView 
@@ -137,7 +119,7 @@ export default function HomeScreen() {
             <Button 
               title="Shop Now" 
               style={styles.heroButton}
-              onPress={() => router.push('/category/summer')}
+              onPress={() => router.push('/products')}
             />
           </View>
         </Animated.View>
@@ -151,12 +133,24 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
           
-          {categories.map((category, index) => (
-            <CategoryCard 
-              key={category.id} 
-              category={category} 
-            />
-          ))}
+          {
+            !isLoadingCategories && categoriesData && (
+              Array.isArray(categoriesData) ? (
+                categoriesData.map((category: Category) => (
+                  <CategoryCard 
+                    key={category.id} 
+                    category={category} 
+                  />
+                ))
+              ) : (
+                <CategoryCard 
+                  key={categoriesData.id} 
+                  category={categoriesData as Category} 
+                />
+              )
+            )
+          }
+         
         </Animated.View>
         
         {/* Promotional Banners */}
@@ -171,12 +165,12 @@ export default function HomeScreen() {
                 <View style={styles.promoBannerContent}>
                   <Text style={styles.promoBannerTitle}>{banner.title}</Text>
                   <Text style={styles.promoBannerSubtitle}>{banner.subtitle}</Text>
-                  <TouchableOpacity>
+                  <TouchableOpacity onPress={() => router.push('/products')}>
                     <Text style={styles.promoBannerLink}>Shop Now</Text>
                   </TouchableOpacity>
                 </View>
                 <Image 
-                  source={{ uri: banner.image }}
+                  source={{ uri: banner?.image }}
                   style={styles.promoBannerImage}
                 />
               </TouchableOpacity>
@@ -188,15 +182,15 @@ export default function HomeScreen() {
         <Animated.View entering={FadeInDown.delay(400).duration(600)}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Featured Products</Text>
-            <TouchableOpacity>
-              <Text onPress={() => router.push('/products')} style={styles.seeAllText}>See All</Text>
+            <TouchableOpacity onPress={() => router.push('/products')}>
+              <Text style={styles.seeAllText}>See All</Text>
             </TouchableOpacity>
           </View>
           
           <View style={styles.productsGrid}>
-            {featuredProducts.map((product) => (
+            {products?.map((product) => (
               <ProductCard
-                key={product.id}
+                key={product?.id}
                 product={product}
                 onAddToCart={handleAddToCart}
                 onToggleWishlist={handleToggleWishlist}

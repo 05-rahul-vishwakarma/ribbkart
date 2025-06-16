@@ -1,21 +1,13 @@
+import { publicInstance } from '../axiosInstance';
 import { API_ENDPOINTS } from '../api_endpoints';
+import { Category } from '@/components/product/CategoryCard';
 
-export const getAllCategories = () => fetch(API_ENDPOINTS.categories.all);
-export const getCategory = (id: string) => fetch(API_ENDPOINTS.categories.single(id));
+export const getAllCategories = async (): Promise<Category[]> => {
+    const response = await publicInstance.get(API_ENDPOINTS.categories.all);
+    return response.data.data;
+};
 
-export const createCategory = (token: string, data: any) => fetch(API_ENDPOINTS.categories.create, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-  body: JSON.stringify(data),
-});
-
-export const updateCategory = (token: string, id: string, data: any) => fetch(API_ENDPOINTS.categories.update(id), {
-  method: 'PUT',
-  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-  body: JSON.stringify(data),
-});
-
-export const deleteCategory = (token: string, id: string) => fetch(API_ENDPOINTS.categories.delete(id), {
-  method: 'DELETE',
-  headers: { Authorization: `Bearer ${token}` },
-}); 
+export const getCategory = async (id: string): Promise<Category> => {
+    const response = await publicInstance.get(API_ENDPOINTS.categories.single(id));
+    return response.data.data;
+};

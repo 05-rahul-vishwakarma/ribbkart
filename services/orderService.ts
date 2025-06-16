@@ -1,21 +1,10 @@
+import { privateInstance } from '../axiosInstance';
 import { API_ENDPOINTS } from '../api_endpoints';
 
-export const getMyOrders = (token: string) => fetch(API_ENDPOINTS.orders.myOrders, {
-  headers: { Authorization: `Bearer ${token}` },
-});
+export const getMyOrders = () => privateInstance.get(API_ENDPOINTS.orders.myOrders);
 
-export const getOrder = (token: string, id: string) => fetch(API_ENDPOINTS.orders.single(id), {
-  headers: { Authorization: `Bearer ${token}` },
-});
+export const getOrder = (id: string) => privateInstance.get(API_ENDPOINTS.orders.single(id));
 
-export const createOrder = (token: string, data: any) => fetch(API_ENDPOINTS.orders.create, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-  body: JSON.stringify(data),
-});
+export const createOrder = (data: any) => privateInstance.post(API_ENDPOINTS.orders.create, data);
 
-export const updateOrderStatus = (token: string, id: string, data: any) => fetch(API_ENDPOINTS.orders.updateStatus(id), {
-  method: 'PUT',
-  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-  body: JSON.stringify(data),
-}); 
+export const updateOrderStatus = (id: string, data: any) => privateInstance.put(API_ENDPOINTS.orders.updateStatus(id), data); 
